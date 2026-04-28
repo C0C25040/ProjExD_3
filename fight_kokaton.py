@@ -204,7 +204,7 @@ def main():
     beams = []  # ビームを複数発射できるようにリストで管理
     exps = []  # 爆発を複数管理するリスト
     clock = pg.time.Clock()
-    score = Score()
+    score = Score() #issue1 スコアクラスのインスタンス生成
     tmr = 0
     while True:
         for event in pg.event.get():
