@@ -104,9 +104,10 @@ class Beam:
         ビームを速度ベクトルself.vx, self.vyに基づき移動させる
         引数 screen：画面Surface
         """
-        if check_bound(self.rct) == (True, True):
+        def update(self, screen: pg.Surface):
             self.rct.move_ip(self.vx, self.vy)
-            screen.blit(self.img, self.rct)    
+            if check_bound(self.rct) == (True, True):
+                screen.blit(self.img, self.rct)    
 
 
 class Bomb:
@@ -165,7 +166,6 @@ class Score:
         """
         self_img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self_img, self.rct)
-
 class Explosion:
     """
     爆発に関するクラス"""
