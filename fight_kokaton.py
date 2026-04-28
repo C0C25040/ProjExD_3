@@ -140,6 +140,9 @@ class Bomb:
         screen.blit(self.img, self.rct)
 
 class Score:
+    """
+    スコアに関するクラス
+    """
     def __init__(self):
         """
         スコアと文字の設定を考える
@@ -163,6 +166,30 @@ class Score:
         self_img = self.fonto.render(f"Score: {self.score}", True, self.color)
         screen.blit(self_img, self.rct)
 
+class Explosion:
+    """
+    爆発に関するクラス"""
+    def __init__(self, rct: pg.Rect):
+        """
+        爆発画像Surfaceを生成する
+        引数 rct：爆発の位置と大きさを表すRect
+        """
+        img = pg.image.load("fig/explosion.gif")
+        self.imgs = [img, pg.transform.flip(img, True, True)]  # 爆発画像を左右反転
+        self.rct = self.imgs[0].get_rect()
+        self.rct.center = rct.center
+        self.life = 20  # 爆発の表示時間
+
+    def update(self, screen: pg.Surface):
+        """
+        爆発を画面に転送し、表示時間を減らす
+        引数 screen：画面Surface
+        """
+        self.life -= 1
+        if self.life > 0:
+            img = self.imgs[self.life % 2]  # 交互に切り替え
+            screen.blit(img, self.rct)
+
 def main():
     pg.display.set_caption("たたかえ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))    
@@ -175,6 +202,7 @@ def main():
     #     bombs.append(bomb)
     beam = None  # ゲーム初期化時にはビームは存在しない
     beams = []  # ビームを複数発射できるようにリストで管理
+    exps = []  # 爆発を複数管理するリスト
     clock = pg.time.Clock()
     score = Score()
     tmr = 0
@@ -203,17 +231,20 @@ def main():
                 for j, beam in enumerate(beams):
                     if beam is not None:
                         if beam.rct.colliderect(bomb.rct): #練習2　ビームと爆弾の衝突
+                            exps.append(Explosion(bomb.rct))  # 爆発を生成
                             beams[j] = None  # 衝突したビームをリストから削除
                             bombs[i] = None
                             bird.change_img(6, screen) #練習3 こうかとん喜びの舞
                             score.score += 1  # 爆弾を撃墜した場合、スコアを増加
-                            pg.display.update()
+                            # pg.display.update()
                             # time.sleep(1)
+                            break  # ビームは1つの爆弾にしか当たらないので、内側のループを抜ける
 
         score.update(screen)
 
         bombs = [bomb for bomb in bombs if bomb is not None]  # Noneの爆弾をリストから削除
         beams = [beam for beam in beams if beam is not None]  # Noneのビームをリストから削除
+        exps = [exp for exp in exps if exp.life > 0]  # 表示時間が残っている爆発をリストに含める
 
         key_lst = pg.key.get_pressed()
         bird.update(key_lst, screen)
@@ -224,6 +255,11 @@ def main():
         for bomb in bombs:
             if bomb is not None:
                 bomb.update(screen)
+        for exp in exps:
+            exp.update(screen)
+
+        score.update(screen)
+
         pg.display.update()
         tmr += 1
         clock.tick(50)
